@@ -40,7 +40,9 @@ app_license = "mit"
 # webform_include_css = {"doctype": "public/css/doctype.css"}
 
 # include js in page
-# page_js = {"page" : "public/js/file.js"}
+# POS product-card size-picker for grouped Item Templates (Latte, first
+# iteration). See arabica_pos/public/js/pos_custom.js.
+page_js = {"point-of-sale": "public/js/pos_custom.js"}
 
 # include js in doctype views
 # doctype_js = {"doctype" : "public/js/doctype.js"}
@@ -183,9 +185,11 @@ app_license = "mit"
 # Overriding Methods
 # ------------------------------
 #
-# override_whitelisted_methods = {
-# 	"frappe.desk.doctype.event.event.get_events": "arabica_pos.event.get_events"
-# }
+# Collapse Latte-S / Latte-M / Latte-L into one "Latte" POS card server
+# side. See arabica_pos/overrides/pos.py.
+override_whitelisted_methods = {
+	"erpnext.selling.page.point_of_sale.point_of_sale.get_items": "arabica_pos.overrides.pos.get_items",
+}
 #
 # each overriding function accepts a `data` argument;
 # generated from the base implementation of the doctype dashboard,
@@ -255,4 +259,3 @@ app_license = "mit"
 # ------------
 # List of apps whose translatable strings should be excluded from this app's translations.
 # ignore_translatable_strings_from = []
-

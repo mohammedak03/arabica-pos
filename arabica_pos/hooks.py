@@ -40,8 +40,9 @@ app_license = "mit"
 # webform_include_css = {"doctype": "public/css/doctype.css"}
 
 # include js in page
-# POS product-card size-picker for grouped Item Templates (Latte, first
-# iteration). See arabica_pos/public/js/pos_custom.js.
+# POS product-card size-picker for Size-based Item Templates (any template
+# with has_variants=1 varying by a "Size" attribute). See
+# arabica_pos/public/js/pos_custom.js.
 page_js = {"point-of-sale": "public/js/pos_custom.js"}
 
 # include js in doctype views
@@ -185,8 +186,8 @@ page_js = {"point-of-sale": "public/js/pos_custom.js"}
 # Overriding Methods
 # ------------------------------
 #
-# Collapse Latte-S / Latte-M / Latte-L into one "Latte" POS card server
-# side. See arabica_pos/overrides/pos.py.
+# Collapse any Size-based Item Template's variants into one POS card
+# server side. See arabica_pos/overrides/pos.py.
 override_whitelisted_methods = {
 	"erpnext.selling.page.point_of_sale.point_of_sale.get_items": "arabica_pos.overrides.pos.get_items",
 }

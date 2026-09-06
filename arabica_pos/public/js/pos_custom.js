@@ -1,30 +1,29 @@
 // Arabica POS customization: size-picker for grouped Item Template cards.
 //
-// The product-card grouping itself (showing one "Latte" card instead of
-// Latte-S / Latte-M / Latte-L) happens server-side - see
+// The product-card grouping itself (showing one card per Size-based drink
+// template instead of one per size variant) happens server-side - see
 // arabica_pos.overrides.pos.get_items, hooked in via
 // override_whitelisted_methods in hooks.py. erpnext's own (unmodified)
 // pos_item_selector.js renders whatever get_items returns, so once the
 // server sends one merged card per template, core code already renders it
 // as a single card with no JS changes needed for that part.
 //
-// This file only adds the click behaviour for that merged card: instead
-// of adding it to the cart directly (it's an Item Template, ERPNext would
+// This file only adds the click behaviour for a merged card: instead of
+// adding it to the cart directly (it's an Item Template, ERPNext would
 // reject that), a small dialog opens with one button per size. Choosing a
-// size calls cur_pos.on_cart_update(...) with the real variant item_code
-// - the exact same call erpnext.PointOfSale.ItemSelector's own click
-// handler makes for an ordinary card - so pricing, tax, Product Bundle
-// behaviour, and stock all go through the standard POS cart flow.
+// size calls cur_pos.on_cart_update(...) with the real variant item_code -
+// the exact same call erpnext.PointOfSale.ItemSelector's own click handler
+// makes for an ordinary card - so pricing, tax, Product Bundle behaviour,
+// and stock all go through the standard POS cart flow.
+//
+// Deliberately generic: this file contains no item code or product name.
+// A card is treated as a size-picker purely because the server marked it
+// `is_grouped_template: true` and gave it `pos_variant_options`; whichever
+// templates qualify (Latte today, Americano/Cappuccino/... tomorrow) is
+// decided entirely in overrides/pos.py.
 //
 // Loaded on the "point-of-sale" page only, via the page_js hook in
 // hooks.py. No core ERPNext/Frappe file is modified or monkey-patched.
-
-frappe.provide("arabica_pos.pos");
-
-// Item codes of Item Templates grouped into one POS card. Must match
-// arabica_pos.overrides.pos.POS_GROUPED_TEMPLATES on the server.
-// First iteration: only "Latte" (FG-LATTE).
-arabica_pos.pos.GROUPED_TEMPLATE_ITEM_CODES = ["FG-LATTE"];
 
 (function () {
 	function get_active_item_selector() {
@@ -92,14 +91,12 @@ arabica_pos.pos.GROUPED_TEMPLATE_ITEM_CODES = ["FG-LATTE"];
 	// any bubble-phase listener on a descendant element - including
 	// ItemSelector's own `this.$component.on("click", ".item-wrapper", ...)`
 	// delegate (bound in bubble phase on `.items-selector`). That makes
-	// interception deterministic regardless of exactly when the POS
-	// bundle finishes loading relative to this script, without needing to
+	// interception deterministic regardless of exactly when the POS bundle
+	// finishes loading relative to this script, without needing to
 	// monkey-patch erpnext.PointOfSale.ItemSelector at all.
 	document.addEventListener(
 		"click",
 		function (evt) {
-			if (!arabica_pos.pos.GROUPED_TEMPLATE_ITEM_CODES.length) return;
-
 			const item_selector = get_active_item_selector();
 			if (!item_selector) return;
 
@@ -108,15 +105,17 @@ arabica_pos.pos.GROUPED_TEMPLATE_ITEM_CODES = ["FG-LATTE"];
 			if (!item_selector.$component[0].contains($item_wrapper)) return;
 
 			const item_code = $item_wrapper.getAttribute("data-item-code");
-			if (!arabica_pos.pos.GROUPED_TEMPLATE_ITEM_CODES.includes(item_code)) return;
+			const card_data = find_card_data(item_selector, item_code);
+
+			// The server, not this file, decides whether a card is a
+			// grouped template - this check is the only thing gating
+			// interception, and it names no product.
+			if (!card_data || !card_data.is_grouped_template) return;
 
 			// Stop this specific click here; everything else (search,
 			// other product cards, scanning, ...) is left untouched.
 			evt.stopPropagation();
 			evt.preventDefault();
-
-			const card_data = find_card_data(item_selector, item_code);
-			if (!card_data) return;
 
 			open_size_dialog(card_data);
 		},

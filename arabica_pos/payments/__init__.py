@@ -1,0 +1,1 @@
+"""Card-terminal payment integration for Arabica POS."""

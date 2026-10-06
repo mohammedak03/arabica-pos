@@ -43,7 +43,12 @@ app_license = "mit"
 # POS product-card size-picker for Size-based Item Templates (any template
 # with has_variants=1 varying by a "Size" attribute). See
 # arabica_pos/public/js/pos_custom.js.
-page_js = {"point-of-sale": "public/js/pos_custom.js"}
+page_js = {
+	"point-of-sale": [
+		"public/js/pos_custom.js",
+		"public/js/pos_payments.js",
+	]
+}
 
 # include js in doctype views
 # doctype_js = {"doctype" : "public/js/doctype.js"}
